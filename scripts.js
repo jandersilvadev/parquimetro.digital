@@ -1,29 +1,49 @@
 class Parquimetro {
     constructor() {
-        this.minutosPorReal = 30;
         this.tempoRestante = 0;
-        this.tempoMaximo = 120; 
+        this.tempoMaximo = 120;
     }
 
     calcularTempo(valor) {
-        return valor * this.minutosPorReal;
+        if (valor >= 3.00) {
+            return { minutos: 120, troco: valor - 3.00 }; 
+        } else if (valor >= 1.75) {
+            return { minutos: 60, troco: valor - 1.75 };
+        } else if (valor >= 1.00) {
+            return { minutos: 30, troco: valor - 1.00 };
+        } else {
+            return { minutos: 0, troco: valor, mensagem: "Valor insuficiente" };
+        }
     }
 
     inserirValor(valor) {
-        const minutosInseridos = this.calcularTempo(valor);
+        const resultado = this.calcularTempo(valor);
 
-        if (this.tempoRestante + minutosInseridos > this.tempoMaximo) {
-            const minutosPermitidos = this.tempoMaximo - this.tempoRestante;
-            const minutosExcedentes = minutosInseridos - minutosPermitidos;
-            const troco = minutosExcedentes / this.minutosPorReal;
-
-            this.tempoRestante = this.tempoMaximo; 
-            console.log(`Tempo máximo atingido. Devolvendo R$${troco.toFixed(2)} de troco.`);
-            alert(`Tempo máximo atingido (${this.tempoMaximo} minutos)! Devolvendo R$${troco.toFixed(2)} de troco.`);
-        } else {
-            this.tempoRestante += minutosInseridos; 
+        if (resultado.minutos === 0) {
+            alert("Valor insuficiente. O valor mínimo é R$1,00.");
+            return;
         }
-        this.mostrarTempoDisponivel(); 
+
+        const minutosDisponiveis = this.tempoMaximo - this.tempoRestante;
+
+        if (resultado.minutos > minutosDisponiveis) {
+            const minutosPermitidos = minutosDisponiveis;
+            this.tempoRestante = this.tempoMaximo;
+
+            const proporcao = minutosPermitidos / resultado.minutos;
+            const valorUtilizado = (valor - resultado.troco) * proporcao;
+            const trocoFinal = valor - valorUtilizado;
+
+            alert(`Tempo máximo atingido (${this.tempoMaximo} minutos)! Devolvendo R$${trocoFinal.toFixed(2)} de troco.`);
+        } else {
+            this.tempoRestante += resultado.minutos;
+
+            if (resultado.troco > 0) {
+                alert(`Adicionado ${resultado.minutos} minutos. Devolvendo R$${resultado.troco.toFixed(2)} de troco.`);
+            }
+        }
+
+        this.mostrarTempoDisponivel();
     }
 
     mostrarTempoDisponivel() {
@@ -32,7 +52,6 @@ class Parquimetro {
             resultadoElement.innerText = `Tempo disponível: ${this.tempoRestante.toFixed(0)} minutos (Máx: ${this.tempoMaximo} minutos)`;
         }
     }
-
 }
 
 const parquimetro = new Parquimetro();
